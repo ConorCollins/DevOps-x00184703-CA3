@@ -1,0 +1,32 @@
+trigger:
+- develop
+
+pool:
+  name: ConorSelfHostedPool
+
+variables:
+  - name: pythonVersion
+    value: '3.10'
+  - group: MyVariableGroup  # Ensure this is part of the same variables list
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: $(pythonVersion)
+    addToPath: true
+    token: $(GITHUB_TOKEN)
+  displayName: 'Set up Python'
+
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: 'Install dependencies'
+
+- script: |
+    coverage run -m unittest discover -s tests -p "test_*.py"
+    coverage report
+  displayName: 'Run tests and generate coverage report'
+
+- script: |
+    bandit -r src/
+  displayName: 'Run Bandit for static code analysis'
