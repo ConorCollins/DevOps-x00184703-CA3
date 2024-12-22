@@ -23,8 +23,8 @@ stages:
           - task: Checkout@1
             displayName: "Checkout Code"
 
-          # Set up Python
-          - task: UsePythonVersion@0
+          # Set up Python (updated version)
+          - task: UsePythonVersion@2  # Changed to @2
             inputs:
               versionSpec: '3.x'
               addToPath: true
