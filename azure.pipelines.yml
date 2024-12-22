@@ -1,17 +1,19 @@
 trigger:
-- develop  # Set to the 'develop' branch for testing
+- develop 
 
 pool:
-  name: ConorSelfHostedPool  # Use your self-hosted agent
+  name: ConorSelfHostedPool
 
 variables:
   pythonVersion: '3.10'
+- group: github_token
 
 steps:
 - task: UsePythonVersion@0
   inputs:
     versionSpec: $(pythonVersion)
     addToPath: true
+    token: $(GITHUB_TOKEN)
   displayName: 'Set up Python'
 
 - script: |
