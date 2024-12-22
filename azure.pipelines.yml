@@ -47,7 +47,7 @@ stages:
 
     - script: |
         venv\Scripts\activate
-        bandit -r src/
+        python -m bandit -r src/
       displayName: 'Run Bandit for static code analysis'
 
     - script: |
