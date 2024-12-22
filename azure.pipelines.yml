@@ -50,6 +50,11 @@ stages:
         bandit -r src/
       displayName: 'Run Bandit for static code analysis'
 
+    - script: |
+        venv\Scripts\activate
+        pip list
+      displayName: 'List installed packages (Debug)'
+
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: $(System.DefaultWorkingDirectory)/.coverage
