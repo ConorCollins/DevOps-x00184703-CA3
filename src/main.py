@@ -1,47 +1,52 @@
-# src/main.py
-
 from calculator import add, subtract, multiply, divide
 
+def display_menu():
+    """Displays the calculator menu."""
+    print(
+        "Calculator\n"
+        "Available operations:\n"
+        "1. Add\n"
+        "2. Subtract\n"
+        "3. Multiply\n"
+        "4. Divide\n"
+        "5. Exit"
+    )
+
+def process_choice(choice, num1, num2):
+    """Performs the selected operation."""
+    operations = {
+        '1': add,
+        '2': subtract,
+        '3': multiply,
+        '4': divide
+    }
+    try:
+        return operations[choice](num1, num2)
+    except KeyError:
+        return "Invalid choice"
+    except ValueError as e:
+        return f"Error: {e}"
+
 def main():
-    print("Calculator")
-    print("Available operations:")
-    print("1. Add")
-    print("2. Subtract")
-    print("3. Multiply")
-    print("4. Divide")
-    print("5. Exit")
+    """Simplified main function."""
+    display_menu()
+    choice = input("Select operation (1/2/3/4/5): ").strip()
 
-    while True:
-        try:
-            choice = input("\nSelect operation (1/2/3/4/5): ")
-            if choice == '5':
-                print("Exiting calculator.")
-                break
+    if choice == '5':
+        print("Exiting calculator.")
+        return
 
-            if choice not in ('1', '2', '3', '4'):
-                print("Invalid input. Please select a valid option.")
-                continue
+    if choice not in ('1', '2', '3', '4'):
+        print("Invalid input. Please select a valid option.")
+        return
 
-            num1 = float(input("Enter first number: "))
-            num2 = float(input("Enter second number: "))
-
-            if choice == '1':
-                result = add(num1, num2)
-                print(f"The result is: {result}")
-            elif choice == '2':
-                result = subtract(num1, num2)
-                print(f"The result is: {result}")
-            elif choice == '3':
-                result = multiply(num1, num2)
-                print(f"The result is: {result}")
-            elif choice == '4':
-                result = divide(num1, num2)
-                print(f"The result is: {result}")
-
-        except ValueError as e:
-            print(f"Error: {e}")
-        except Exception as e:
-            print(f"Unexpected error: {e}")
+    try:
+        num1 = float(input("Enter first number: "))
+        num2 = float(input("Enter second number: "))
+        result = process_choice(choice, num1, num2)
+        print(f"The result is: {result}")
+    except ValueError:
+        print("Error: Invalid input. Please enter numeric values.")
 
 if __name__ == "__main__":
     main()
