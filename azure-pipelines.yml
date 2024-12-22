@@ -16,7 +16,7 @@ stages:
   displayName: 'Build Stage'
   jobs:
   - job: Build
-    displayName: 'Install Dependencies'
+    displayName: 'Set Up and Install Dependencies'
     steps:
     - task: UsePythonVersion@0
       inputs:
@@ -25,9 +25,11 @@ stages:
       displayName: 'Set up Python'
 
     - script: |
+        python -m venv venv
+        venv\Scripts\activate
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-      displayName: 'Install dependencies'
+      displayName: 'Set up virtual environment and install dependencies'
 
 # Stage 2: Test
 - stage: Test
@@ -38,11 +40,13 @@ stages:
     displayName: 'Run Tests and Analysis'
     steps:
     - script: |
-        coverage run -m unittest discover -s tests -p "test_*.py"
-        coverage report
+        venv\Scripts\activate
+        python -m coverage run -m unittest discover -s tests -p "test_*.py"
+        python -m coverage report
       displayName: 'Run tests and generate coverage report'
 
     - script: |
+        venv\Scripts\activate
         bandit -r src/
       displayName: 'Run Bandit for static code analysis'
 
