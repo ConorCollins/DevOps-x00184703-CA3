@@ -1,42 +1,29 @@
 trigger:
-  branches:
-    include:
-      - main
+- develop  # Set to the 'develop' branch for testing
 
-pr:
-  branches:
-    include:
-      - main
+pool:
+  name: ConorSelfHostedAgent  # Use your self-hosted agent
 
-stages:
-  - stage: BuildAndTest
-    displayName: "Build and Test"
-    jobs:
-      - job: Build
-        displayName: "Install and Test"
-        pool:
-          name: 'ConorSelfHostedPool'
+variables:
+  pythonVersion: '3.10'
 
-        steps:
-          # Checkout code
-          - task: Checkout@1
-            displayName: "Checkout Code"
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: $(pythonVersion)
+    addToPath: true
+  displayName: 'Set up Python'
 
-          # Set up Python
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.x'
-              addToPath: true
-            displayName: "Set up Python"
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: 'Install dependencies'
 
-          # Install dependencies
-          - script: |
-              python -m pip install --upgrade pip
-              pip install -r requirements.txt
-            displayName: "Install Dependencies"
+- script: |
+    coverage run -m unittest discover -s tests -p "test_*.py"
+    coverage report
+  displayName: 'Run tests and generate coverage report'
 
-          # Run Unit Tests with Coverage
-          - script: |
-              coverage run -m unittest discover -s tests
-              coverage report
-            displayName: "Run Unit Tests with Coverage"
+- script: |
+    bandit -r src/
+  displayName: 'Run Bandit for static code analysis'
