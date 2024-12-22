@@ -1,12 +1,12 @@
 trigger:
-- develop 
+- develop
 
 pool:
   name: ConorSelfHostedPool
 
 variables:
   pythonVersion: '3.10'
-  - group: github_token
+  - group: MyVariableGroup
 
 steps:
 - task: UsePythonVersion@0
