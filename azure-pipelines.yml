@@ -1,32 +1,80 @@
 trigger:
 - develop
+- main  # Trigger on both develop and main branches
 
 pool:
-  name: ConorSelfHostedPool 
+  name: ConorSelfHostedPool
 
 variables:
 - name: pythonVersion
   value: '3.10'
-- group: MyVariableGroup 
+- group: MyVariableGroup
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: $(pythonVersion)
-    addToPath: true
-    token: $(GITHUB_TOKEN)
-  displayName: 'Set up Python'
+stages:
+# Stage 1: Build
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: Build
+    displayName: 'Install Dependencies'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: $(pythonVersion)
+        addToPath: true
+      displayName: 'Set up Python'
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      displayName: 'Install dependencies'
 
-- script: |
-    coverage run -m unittest discover -s tests -p "test_*.py"
-    coverage report
-  displayName: 'Run tests and generate coverage report'
+# Stage 2: Test
+- stage: Test
+  dependsOn: Build
+  displayName: 'Test Stage'
+  jobs:
+  - job: Test
+    displayName: 'Run Tests and Analysis'
+    steps:
+    - script: |
+        coverage run -m unittest discover -s tests -p "test_*.py"
+        coverage report
+      displayName: 'Run tests and generate coverage report'
 
-- script: |
-    bandit -r src/
-  displayName: 'Run Bandit for static code analysis'
+    - script: |
+        bandit -r src/
+      displayName: 'Run Bandit for static code analysis'
+
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: $(System.DefaultWorkingDirectory)/.coverage
+        artifactName: coverage-report
+        publishLocation: 'Pipeline'
+      displayName: 'Publish Coverage Report'
+
+# Stage 3: Deploy
+- stage: Deploy
+  dependsOn: Test
+  displayName: 'Deploy Stage'
+  jobs:
+  - deployment: DeployTest
+    displayName: 'Deploy to Test Environment'
+    environment: 'Test'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Deploying to Test environment"
+            displayName: 'Deploy to Test'
+
+  - deployment: DeployProd
+    displayName: 'Deploy to Production Environment'
+    environment: 'Prod'
+    dependsOn: DeployTest
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Deploying to Production environment"
+            displayName: 'Deploy to Production'
