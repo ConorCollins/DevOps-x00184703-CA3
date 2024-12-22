@@ -5,8 +5,8 @@ pool:
   name: ConorSelfHostedPool
 
 variables:
-  pythonVersion: '3.10'  # Define as a simple key-value pair
-  group: MyVariableGroup  # Add the group as another key-value pair
+- name: pythonVersion
+  value: '3.10'
 
 steps:
 - task: UsePythonVersion@0
