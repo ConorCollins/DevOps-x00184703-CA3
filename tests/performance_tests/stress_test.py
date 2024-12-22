@@ -1,4 +1,4 @@
-from calculator import add, divide
+from src.calculator import add, divide
 
 def stress_test():
     try:
