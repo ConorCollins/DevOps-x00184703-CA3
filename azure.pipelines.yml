@@ -2,7 +2,7 @@ trigger:
 - develop  # Set to the 'develop' branch for testing
 
 pool:
-  name: ConorSelfHostedAgent  # Use your self-hosted agent
+  name: ConorSelfHostedPool  # Use your self-hosted agent
 
 variables:
   pythonVersion: '3.10'
