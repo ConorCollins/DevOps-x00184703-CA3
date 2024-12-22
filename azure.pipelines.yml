@@ -5,15 +5,14 @@ pool:
   name: ConorSelfHostedPool
 
 variables:
-  pythonVersion: '3.10'
-  - group: MyVariableGroup
+- name: pythonVersion
+  value: '3.10'
 
 steps:
 - task: UsePythonVersion@0
   inputs:
     versionSpec: $(pythonVersion)
     addToPath: true
-    token: $(GITHUB_TOKEN)
   displayName: 'Set up Python'
 
 - script: |
