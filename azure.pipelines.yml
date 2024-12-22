@@ -43,9 +43,18 @@ stages:
         venv\Scripts\activate
         python -m coverage run -m unittest discover -s tests -p "test_*.py"
         python -m coverage report
+      displayName: 'Run tests and generate coverage report'
+
+    - script: |
+        venv\Scripts\activate
         bandit -r src/
-      displayName: 'Run tests and generate coverage report and static code analysis'
-      
+      displayName: 'Run Bandit for static code analysis'
+
+    - script: |
+        venv\Scripts\activate
+        pip list
+      displayName: 'List installed packages (Debug)'
+
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: $(System.DefaultWorkingDirectory)/.coverage
