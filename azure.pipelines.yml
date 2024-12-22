@@ -1,0 +1,103 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+stages:
+  # Stage 1: Build and Test
+  - stage: BuildAndTest
+    displayName: "Build and Test"
+    jobs:
+      - job: Build
+        displayName: "Install and Test"
+        pool:
+          name: 'ConorSelfHostedPool'
+
+        steps:
+          # Checkout code
+          - task: Checkout@1
+            displayName: "Checkout Code"
+
+          # Set up Python
+          - task: UsePythonVersion@1
+            inputs:
+              versionSpec: '3.x'
+              addToPath: true
+            displayName: "Set up Python"
+
+          # Install dependencies
+          - script: |
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: "Install Dependencies"
+
+          # Run Unit Tests with Coverage
+          - script: |
+              coverage run -m unittest discover -s tests
+              coverage report
+              coverage xml
+            displayName: "Run Unit Tests with Coverage"
+
+          # Upload Code Coverage Report (Optional)
+          - task: PublishCodeCoverageResults@1
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: 'coverage.xml'
+            displayName: "Publish Code Coverage Results"
+
+          # Static Code Analysis (Optional)
+          - script: |
+              pip install bandit
+              bandit -r src
+            displayName: "Run Static Code Analysis"
+
+          # Publish Build Artifacts
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: $(Build.SourcesDirectory)
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
+            displayName: "Publish Build Artifacts"
+
+  # Stage 2: Deploy to Test Environment
+  - stage: DeployToTest
+    displayName: "Deploy to Test Environment"
+    dependsOn: BuildAndTest
+    condition: succeeded()
+    jobs:
+      - deployment: Test
+        displayName: "Deploy to Test"
+        pool:
+          name: 'ConorSelfHostedPool'
+        environment: 'Test'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - script: |
+                    echo "Deploying to Test environment"
+                  displayName: "Deploy Test Artifact"
+
+  # Stage 3: Deploy to Production Environment
+  - stage: DeployToProd
+    displayName: "Deploy to Production Environment"
+    dependsOn: DeployToTest
+    condition: succeeded()
+    jobs:
+      - deployment: Production
+        displayName: "Deploy to Production"
+        pool:
+          name: 'ConorSelfHostedPool'
+        environment: 'Production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - script: |
+                    echo "Deploying to Production environment"
+                  displayName: "Deploy Production Artifact"
